@@ -22,20 +22,19 @@ func (server *Server) newConnection(conn net.Conn) {
 		switch command {
 		case "NAME":
 			user.Name = args[0]
-			server.Broadcast("SERVER", user.Name+" has connected.")
+			server.Broadcast(&user, user.Name+" has connected.")
 		case "MSG":
-			server.Broadcast(user.Name, strings.Join(args, " "))
+			server.Broadcast(&user, strings.Join(args, " "))
 			// else:
 			// handle unknown messages
 		}
 	}
 }
 
-func (server *Server) Broadcast(sender string, message string) {
+func (server *Server) Broadcast(sender *User, message string) {
 	for _, user := range server.Users {
-		if user.Name != sender {
-			user.Outgoing.WriteString(sender + ": " + message + "\n")
-			user.Outgoing.Flush()
+		if user != sender {
+			user.Send(sender.Name + ": " + message + "\n")
 		}
 	}
 }
@@ -44,6 +43,11 @@ type User struct {
 	Incoming *bufio.Scanner
 	Outgoing *bufio.Writer
 	Name     string
+}
+
+func (user *User) Send(message string) {
+	user.Outgoing.WriteString(message)
+	user.Outgoing.Flush()
 }
 
 func main() {
