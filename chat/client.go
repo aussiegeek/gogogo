@@ -15,7 +15,7 @@ type Client struct {
 }
 
 func (client Client) Send(message string) {
-	fmt.Fprintf(client.Connection, message+"\n")
+	fmt.Println(client.Connection, message)
 }
 
 func main() {
